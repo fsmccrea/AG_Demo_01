@@ -459,10 +459,11 @@ MonoBehaviour:
   minWalkSpeed: 1
   maxWalkSpeed: 7
   runSpeed: 12
-  turnSpeed: 20
-  jumpHeight: 2
-  accelTime: 0.1
-  airControl: 0
+  turnTime: 0.05
+  jumpHeight: 4
+  accelTime: 0.2
+  stopTime: 0.1
+  airControl: 0.2
   playerCam: {fileID: 1761199342}
 --- !u!4 &670228696
 Transform:
