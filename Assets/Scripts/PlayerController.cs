@@ -18,25 +18,25 @@ public class PlayerController : MonoBehaviour {
 
 	CharacterController _controller;
 	
-//	Vector2 inputMove;
+//	Vector2 _inputMove;
 //	Vector2 _inputDir;
-	Vector3 inputMove;
+	Vector3 _inputMove;
 	Vector3 _inputDir;
 	bool _running;
 	bool _jumping;
 	bool _canJump;
 	bool _isGrounded;
 
-	float _gravity = -20f;
+	float _gravity = -35f;
 
-	Vector3 _moveDir;
+	Vector3 _moveVel;
 	Vector3 _currentMoveDirVel;
 
 	float _moveAngle;
 	float _lookAngle;
 	float _currentAngle;
 //	float _currentMoveTurnAccel;
-	float _currentTurnAccel;
+	float _currentTurnVel;
 	float _currentSpeed;
 	float _currentAccel;
 
@@ -54,9 +54,9 @@ public class PlayerController : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		
-//		inputMove = new Vector2 (Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-		inputMove = new Vector3 (Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));
-		_inputDir = inputMove.normalized;
+//		_inputMove = new Vector2 (Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+		_inputMove = new Vector3 (Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));
+		_inputDir = _inputMove.normalized;
 		_running = Input.GetButton("Button5");
 
 		_jumping = Input.GetButton("Button2");
@@ -72,6 +72,7 @@ public class PlayerController : MonoBehaviour {
 			Jump();
 
 		Move();
+		GetComponent<BoxAnimator>().Lean(_currentAccel, _currentTurnVel);
 	}
 
 	void Move() {
@@ -85,16 +86,17 @@ public class PlayerController : MonoBehaviour {
 		float targetAngle = Mathf.Atan2 (_inputDir.x, _inputDir.z) * Mathf.Rad2Deg;// + cameraAngle;
 		if (_inputDir.magnitude > 0)
 			_moveAngle = Mathf.SmoothDampAngle(_moveAngle, targetAngle, ref _currentMoveTurnAccel, ((_controller.isGrounded) ? 0 : GetModifiedAccelTime(.1f)));
-		_currentAngle = Mathf.SmoothDampAngle (_currentAngle, _moveAngle, ref _currentTurnAccel, turnTime);
+		_currentAngle = Mathf.SmoothDampAngle (_currentAngle, _moveAngle, ref _currentTurnVel, turnTime);
 		*/
-		_moveDir = Vector3.SmoothDamp(_moveDir, _inputDir, ref _currentMoveDirVel, ((_controller.isGrounded) ? 0 : GetModifiedAccelTime(.1f)));
-		float targetAngle = Mathf.Atan2 (_moveDir.x, _moveDir.z) * Mathf.Rad2Deg;
+		_moveVel = Vector3.SmoothDamp(_moveVel, _inputDir, ref _currentMoveDirVel, ((_controller.isGrounded) ? 0 : GetModifiedAccelTime(.1f)));
+		float targetAngle = Mathf.Atan2 (_moveVel.x, _moveVel.z) * Mathf.Rad2Deg;
 //		_lookAngle = Mathf.Lerp (_lookAngle, targetAngle, _inputDir.magnitude);
 		if (_inputDir.magnitude > 0)
-		_currentAngle = Mathf.SmoothDampAngle (_currentAngle, targetAngle, ref _currentTurnAccel, turnTime);
+		_currentAngle = Mathf.SmoothDampAngle (_currentAngle, targetAngle, ref _currentTurnVel, turnTime);
+		
 
 		//thumbstick magnitude calc
-		float walkPercent = Mathf.Clamp(inputMove.magnitude, 0f, .8f) / 0.8f;
+		float walkPercent = Mathf.Clamp(_inputMove.magnitude, 0f, 0.8f) / 0.8f;
 		float currentWalkSpeed = Mathf.Lerp(minWalkSpeed, maxWalkSpeed, walkPercent);
 
 		//move calc
@@ -113,8 +115,8 @@ public class PlayerController : MonoBehaviour {
 //		_velocity.x = (moveDir * _currentSpeed).x;
 //		_velocity.z = (moveDir * _currentSpeed).z;
 
-		_velocity.x = _moveDir.x * _currentSpeed;
-		_velocity.z = _moveDir.z * _currentSpeed;
+		_velocity.x = _moveVel.x * _currentSpeed;
+		_velocity.z = _moveVel.z * _currentSpeed;
 
 		//output
 		transform.eulerAngles = Vector3.up * _currentAngle;
@@ -144,7 +146,8 @@ public class PlayerController : MonoBehaviour {
 
 	void Jump() {
 		_canJump = _controller.isGrounded;
-		_velocity.y = Mathf.Sqrt(-2 * jumpHeight * _gravity);
+//		_velocity.y = Mathf.Sqrt(-2 * jumpHeight * _gravity);
+		_velocity = new Vector3(_inputDir.x * _currentSpeed, Mathf.Sqrt(-2 * jumpHeight * _gravity), _inputDir.z * _currentSpeed);
 		print(_canJump);
 	}
 }
