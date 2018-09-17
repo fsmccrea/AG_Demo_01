@@ -4,9 +4,16 @@ using UnityEngine;
 
 public class BoxAnimator : MonoBehaviour {
 
-	public float leanMaxAngle = 45;
+	public float forwardLeanMaxAngle = 45;
+	public float forwardLeanMinAngle = 10;
+	public float turnLeanTime = 0.05f;
 
 	Transform _boxTransform;
+
+	float _oldTurnAngle;
+	float _currentLeanAngle;
+	
+	float _currentAngleAccel;
 
 	// Use this for initialization
 	void Start () {
@@ -15,16 +22,24 @@ public class BoxAnimator : MonoBehaviour {
 
 	}
 	
-	public void Lean (float accel, float turnVel) {
+	public void Lean (float speed, float accel, float turnAngle) {
 
-		float accelPercent = Mathf.Clamp(accel/40, -.2f, 1);
-		float turnVelPercent = turnVel;
+		
+		float turnVel = (turnAngle - _oldTurnAngle);
 
-		Vector2 _currentLeanAnglePercent = new Vector2 (accelPercent, turnVelPercent);
+	//	_currentLeanAngle = Mathf.SmoothDampAngle(_currentLeanAngle, turnVel, ref _currentAngleAccel, turnLeanTime);
+	//	_currentLeanAngle = Mathf.Lerp(_currentLeanAngle, turnVel, Time.deltaTime);
+	//	print (_currentLeanAngle);
 
-		_boxTransform.localEulerAngles = Vector3.right * accelPercent * leanMaxAngle;
+		float accelPercent = Mathf.Clamp(accel/40, 0, 1) * forwardLeanMaxAngle;
+		float turnVelPercent = Mathf.Lerp (0, turnVel, speed/12);
 
-		Debug.DrawRay (_boxTransform.position, transform.right * turnVelPercent, Color.blue);
-		print (_currentLeanAnglePercent);
+		float speedLeanPercent = Mathf.Lerp (0, forwardLeanMinAngle, speed/12);
+
+		_oldTurnAngle = turnAngle;
+
+		_boxTransform.localEulerAngles = Vector3.right * (accelPercent + speedLeanPercent) + Vector3.back * turnVelPercent;
+
+		Debug.DrawRay (_boxTransform.position, transform.right * turnVel, Color.blue);
 	}
 }

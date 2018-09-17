@@ -17,9 +17,8 @@ public class PlayerController : MonoBehaviour {
 	public GameObject playerCam;
 
 	CharacterController _controller;
+	Transform _camPos;
 	
-//	Vector2 _inputMove;
-//	Vector2 _inputDir;
 	Vector3 _inputMove;
 	Vector3 _inputDir;
 	bool _running;
@@ -35,7 +34,6 @@ public class PlayerController : MonoBehaviour {
 	float _moveAngle;
 	float _lookAngle;
 	float _currentAngle;
-//	float _currentMoveTurnAccel;
 	float _currentTurnVel;
 	float _currentSpeed;
 	float _currentAccel;
@@ -48,20 +46,21 @@ public class PlayerController : MonoBehaviour {
 	void Start () {
 
 		_controller = GetComponent<CharacterController>();
+		_camPos = transform.GetChild(0);
 		
 	}
 	
 	// Update is called once per frame
 	void Update () {
 		
-//		_inputMove = new Vector2 (Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
 		_inputMove = new Vector3 (Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));
 		_inputDir = _inputMove.normalized;
 		_running = Input.GetButton("Button5");
 
 		_jumping = Input.GetButton("Button2");
 
-		_velocity.y += ((_jumping) ? _gravity : _gravity - 35) * Time.deltaTime;
+		float _downward = ((_velocity.y > 0) ? _downward = 0 : _downward = -10);
+		_velocity.y += ((_jumping) ? _gravity + _downward : _gravity + _downward - 35) * Time.deltaTime;
 		if (_controller.isGrounded) {
 			_velocity.y = -.01f;
 			_canJump = true;
@@ -72,7 +71,7 @@ public class PlayerController : MonoBehaviour {
 			Jump();
 
 		Move();
-		GetComponent<BoxAnimator>().Lean(_currentAccel, _currentTurnVel);
+		GetComponent<BoxAnimator>().Lean(_currentSpeed, _currentAccel, _currentAngle);
 	}
 
 	void Move() {
@@ -81,25 +80,17 @@ public class PlayerController : MonoBehaviour {
 		_inputDir = (Quaternion.Euler(0, cameraAngle, 0) * _inputDir);
 
 		//facing calc
-
-		/*
-		float targetAngle = Mathf.Atan2 (_inputDir.x, _inputDir.z) * Mathf.Rad2Deg;// + cameraAngle;
-		if (_inputDir.magnitude > 0)
-			_moveAngle = Mathf.SmoothDampAngle(_moveAngle, targetAngle, ref _currentMoveTurnAccel, ((_controller.isGrounded) ? 0 : GetModifiedAccelTime(.1f)));
-		_currentAngle = Mathf.SmoothDampAngle (_currentAngle, _moveAngle, ref _currentTurnVel, turnTime);
-		*/
-		_moveVel = Vector3.SmoothDamp(_moveVel, _inputDir, ref _currentMoveDirVel, ((_controller.isGrounded) ? 0 : GetModifiedAccelTime(.1f)));
 		float targetAngle = Mathf.Atan2 (_moveVel.x, _moveVel.z) * Mathf.Rad2Deg;
-//		_lookAngle = Mathf.Lerp (_lookAngle, targetAngle, _inputDir.magnitude);
 		if (_inputDir.magnitude > 0)
 		_currentAngle = Mathf.SmoothDampAngle (_currentAngle, targetAngle, ref _currentTurnVel, turnTime);
-		
 
 		//thumbstick magnitude calc
 		float walkPercent = Mathf.Clamp(_inputMove.magnitude, 0f, 0.8f) / 0.8f;
 		float currentWalkSpeed = Mathf.Lerp(minWalkSpeed, maxWalkSpeed, walkPercent);
 
 		//move calc
+		_moveVel = Vector3.SmoothDamp(_moveVel, _inputDir, ref _currentMoveDirVel, ((_controller.isGrounded) ? 0 : GetModifiedAccelTime(.1f)));
+
 		float targetSpeed = ((_running) ? runSpeed : currentWalkSpeed) * _inputDir.magnitude;
 		if (targetSpeed != 0) {
 			_currentSpeed = Mathf.SmoothDamp(_currentSpeed, targetSpeed, ref _currentAccel, GetModifiedAccelTime(/*false, */accelTime));
@@ -107,34 +98,19 @@ public class PlayerController : MonoBehaviour {
 			_currentSpeed = Mathf.SmoothDamp(_currentSpeed, targetSpeed, ref _currentAccel, GetModifiedAccelTime(/*false, */stopTime));
 		}
 		if (_currentSpeed < .01f) _currentSpeed = 0;
-//		_velocity = new Vector3(_inputDir.x, _velocity.y, _inputDir.y) * _currentSpeed * Time.deltaTime;
-//		_velocity.x = _inputDir.x * _currentSpeed;
-//		_velocity.z = _inputDir.z * _currentSpeed;
-
-//		Vector3 moveDir = Quaternion.Euler(0, _moveAngle, 0) * Vector3.forward;
-//		_velocity.x = (moveDir * _currentSpeed).x;
-//		_velocity.z = (moveDir * _currentSpeed).z;
-
+		
 		_velocity.x = _moveVel.x * _currentSpeed;
 		_velocity.z = _moveVel.z * _currentSpeed;
 
+		//move cam
+		_camPos.transform.position = transform.position + (_moveVel * _currentSpeed) / 5;
+
 		//output
 		transform.eulerAngles = Vector3.up * _currentAngle;
-//		transform.Translate (Quaternion.Euler(0, cameraAngle, 0) * _velocity, Space.World);
-//		_controller.Move(Quaternion.Euler(0, cameraAngle, 0) * _velocity);
 		_controller.Move(_velocity * Time.deltaTime);
 	}
 
-	float GetModifiedAccelTime(/*bool rotation, */float theAccelTime) {
-//		if (rotation) {
-//			if (_controller.isGrounded) {
-//			return theAccelTime;
-//			}
-//			if (airControl == 0) {
-//				return float.MinValue;
-//			}
-//			return theAccelTime * airControl;
-//		}
+	float GetModifiedAccelTime(float theAccelTime) {
 		if (_controller.isGrounded) {
 			return theAccelTime;
 		}
@@ -146,8 +122,6 @@ public class PlayerController : MonoBehaviour {
 
 	void Jump() {
 		_canJump = _controller.isGrounded;
-//		_velocity.y = Mathf.Sqrt(-2 * jumpHeight * _gravity);
-		_velocity = new Vector3(_inputDir.x * _currentSpeed, Mathf.Sqrt(-2 * jumpHeight * _gravity), _inputDir.z * _currentSpeed);
-		print(_canJump);
+		_velocity.y = Mathf.Sqrt(-2 * jumpHeight * _gravity);
 	}
 }

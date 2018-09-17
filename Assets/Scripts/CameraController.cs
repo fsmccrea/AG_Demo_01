@@ -13,6 +13,7 @@ public class CameraController : MonoBehaviour {
 	public Vector2 sensitivity = new Vector2(3, 3);
 	public float smoothing = 3;
 	public float followDist = 3;
+	public float leadDist = 2;
 	public float camMaxDistance = 7;
 	[Range(0.0f, 1.0f)]
 	public float obstacleDistBuffer = 1f;
@@ -62,7 +63,10 @@ public class CameraController : MonoBehaviour {
 
 	void MoveCamera() {
 		//camera follow player
-		transform.position = Vector3.SmoothDamp(transform.position, player.transform.position, ref _currentVelocity, followDist * Time.deltaTime);
+//		Vector3 targetPos = player.transform.GetChild(0).position;
+		Vector3 targetPos = Vector3.Lerp(transform.position, player.transform.GetChild(0).position, .8f);
+//		transform.position = Vector3.SmoothDamp(transform.position, player.transform.position, ref _currentVelocity, followDist * Time.deltaTime);
+		transform.position = Vector3.SmoothDamp(transform.position, targetPos, ref _currentVelocity, 5 * Time.deltaTime);
 
 		//camera angle
 		if (_mouseLock) {
