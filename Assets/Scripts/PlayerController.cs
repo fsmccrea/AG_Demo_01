@@ -59,12 +59,7 @@ public class PlayerController : MonoBehaviour {
 
 		_jumping = Input.GetButton("Button2");
 
-		float _downward = ((_velocity.y > 0) ? _downward = 0 : _downward = -10);
-		_velocity.y += ((_jumping) ? _gravity + _downward : _gravity + _downward - 35) * Time.deltaTime;
-		if (_controller.isGrounded) {
-			_velocity.y = -.01f;
-			_canJump = true;
-		}
+		ApplyGravity();
 
 		_jumping = Input.GetButton("Button2");
 		if (Input.GetButtonDown("Button2") && _canJump)
@@ -118,6 +113,20 @@ public class PlayerController : MonoBehaviour {
 			return float.MaxValue;
 		}
 		return theAccelTime / airControl;
+	}
+
+	void ApplyGravity() {
+		float _downward = ((_velocity.y > 0) ? _downward = 0 : _downward = -10);
+		_velocity.y += ((_jumping) ? _gravity + _downward : _gravity + _downward - 35) * Time.deltaTime;
+		if (_controller.isGrounded) {
+			_velocity.y = -.01f;
+			_canJump = true;
+		}
+		if ((_controller.collisionFlags & CollisionFlags.Above) != 0) {
+			if (_velocity.y > 0)
+			_velocity.y = 0;
+		}
+		print (_controller.isGrounded);
 	}
 
 	void Jump() {

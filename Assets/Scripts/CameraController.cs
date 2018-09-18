@@ -85,14 +85,14 @@ public class CameraController : MonoBehaviour {
 		_rayTargetPosition.z = -camMaxDistance - obstacleDistBuffer;
 		camRayTarget.transform.localPosition = _rayTargetPosition;
 
-		Vector3 dirToPoint = (camRayTarget.transform.position - cameraFocus.transform.position).normalized;
+		Vector3 dirToPoint = (camRayTarget.transform.position - player.transform.position  + Vector3.up * 1.55f).normalized;
 
 		RaycastHit hit;
-		if (Physics.Linecast(cameraFocus.transform.position, camRayTarget.transform.position, out hit, obstacles)) {
+		if (Physics.Linecast(player.transform.position + Vector3.up * 1.55f, camRayTarget.transform.position, out hit, obstacles)) {
 			Debug.DrawRay(hit.point, -dirToPoint, Color.blue);
 			theCamera.transform.position = hit.point - dirToPoint * obstacleDistBuffer;
 		} else {
-			Debug.DrawLine(cameraFocus.transform.position, camRayTarget.transform.position, Color.green);
+			Debug.DrawLine(player.transform.position  + Vector3.up * 1.55f, camRayTarget.transform.position, Color.green);
 			theCamera.transform.localPosition = new Vector3 (0, 0, -camMaxDistance);
 		}
 	}
