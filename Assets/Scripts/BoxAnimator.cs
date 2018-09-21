@@ -40,6 +40,6 @@ public class BoxAnimator : MonoBehaviour {
 
 		_boxTransform.localEulerAngles = Vector3.right * (accelPercent + speedLeanPercent) + Vector3.back * turnVelPercent;
 
-		Debug.DrawRay (_boxTransform.position, transform.right * turnVel, Color.blue);
+//		Debug.DrawRay (_boxTransform.position, transform.right * turnVel, Color.blue);
 	}
 }

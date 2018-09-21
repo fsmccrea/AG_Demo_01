@@ -89,10 +89,10 @@ public class CameraController : MonoBehaviour {
 
 		RaycastHit hit;
 		if (Physics.Linecast(player.transform.position + Vector3.up * 1.55f, camRayTarget.transform.position, out hit, obstacles)) {
-			Debug.DrawRay(hit.point, -dirToPoint, Color.blue);
+//			Debug.DrawRay(hit.point, -dirToPoint, Color.blue);
 			theCamera.transform.position = hit.point - dirToPoint * obstacleDistBuffer;
 		} else {
-			Debug.DrawLine(player.transform.position  + Vector3.up * 1.55f, camRayTarget.transform.position, Color.green);
+//			Debug.DrawLine(player.transform.position  + Vector3.up * 1.55f, camRayTarget.transform.position, Color.green);
 			theCamera.transform.localPosition = new Vector3 (0, 0, -camMaxDistance);
 		}
 	}
