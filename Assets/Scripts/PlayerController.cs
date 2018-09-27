@@ -9,6 +9,7 @@ public class PlayerController : MonoBehaviour {
 	//inspector variables
 	public float maxWalkSpeed = 7;
 	public float minWalkSpeed = 1;
+	public float runSpeed = 10;
 	public float jumpHeight = 2;
 
 	public float turnSmoothTime = .3f;
@@ -37,6 +38,7 @@ public class PlayerController : MonoBehaviour {
 
 	//tags
 	bool jumping;
+	bool running;
 	
 	//ref
 	Vector3 currentInputVelocity;
@@ -64,6 +66,8 @@ public class PlayerController : MonoBehaviour {
 		//GROUND CHECK HERE TEMPORARILY
 //		isGrounded = GroundCheck();
 
+		running = Input.GetButton("Button5");
+
 		//jumpin
 		jumping = Input.GetButton("Button2");
 		if (Input.GetButtonDown("Button2") && canJump)
@@ -90,8 +94,8 @@ public class PlayerController : MonoBehaviour {
 		//smooth input (simple) -- r e p u r p o s e
 //		smoothInput = Vector3.SmoothDamp(smoothInput, inputMove, ref currentInputVelocity, inputSmoothTime);
 
-		//lerp walk speed based on input magnitude
-		float walkSpeed = Mathf.Lerp (minWalkSpeed, maxWalkSpeed, Mathf.Clamp(inputMove.magnitude, 0f, 0.8f) / 0.8f);
+		//lerp walk speed based on input magnitude -- temporarily add runspeed in as maxwalkspeed if running is true
+		float walkSpeed = Mathf.Lerp (minWalkSpeed, running ? runSpeed : maxWalkSpeed, Mathf.Clamp(inputMove.magnitude, 0f, 0.8f) / 0.8f);
 		
 		//facing -- add angle smoothing rather than doing it based on smoothInput
 		//if input magnitude is zero, set facing angle to last recorded facing angle, else set it to the angle of SMOOTHED input (looksnicer)
@@ -122,7 +126,7 @@ public class PlayerController : MonoBehaviour {
 //			velocity.y = currentGravAccel;
 		//	velocity.y += gravity * Time.deltaTime;
 		}
-		print ("Grounded = " + isGrounded);
+//		print ("Grounded = " + isGrounded);
 	//	velocity = PeepGround (inputMove.normalized) * walkSpeed;
 
 		//old var
@@ -131,6 +135,9 @@ public class PlayerController : MonoBehaviour {
 		//MOVEMENT + ROTATION output
 		controller.Move(velocity * Time.deltaTime);
 		transform.eulerAngles = Vector3.up * facingAngle;
+
+		//animator output
+		GetComponent<BoxAnimator>().Lean(new Vector3(velocity.x, 0, velocity.z).magnitude, facingAngle);
 	}
 
 	void Jump() {

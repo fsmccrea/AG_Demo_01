@@ -56,8 +56,10 @@ public class CameraController : MonoBehaviour {
 
 		if (_mouseLock) {
 			Cursor.lockState = CursorLockMode.Locked;
+			Cursor.visible = false;
 		} else {
 			Cursor.lockState = CursorLockMode.None;
+			Cursor.visible = true;
 		}
 	}
 

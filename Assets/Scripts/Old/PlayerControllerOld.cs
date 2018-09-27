@@ -62,7 +62,7 @@ public class PlayerControllerOld : MonoBehaviour {
 		if (Input.GetButtonDown("Button2") && _canJump)
 			Jump();
 		Move();
-		GetComponent<BoxAnimator>().Lean(_currentSpeed, _currentAccel, _currentAngle);
+		GetComponent<BoxAnimator>().Lean(_currentSpeed, /*_currentAccel,*/ _currentAngle);
 	}
 
 	void Move() {
