@@ -47,11 +47,11 @@ public class BoxAnimator : MonoBehaviour {
 		accelPercent = Mathf.SmoothDamp(accelPercent, targetAccelPercent, ref _currentAccelVelocity, 0.2f);
 		accelPercent = accelPercent < 0.1 ? 0 : accelPercent;
 
-		float targetTurnVelPercent = Mathf.Lerp (0, turnVel, speed/7) * 1.3f;
+		float targetTurnVelPercent = Mathf.Lerp (0, turnVel, speed/7.1f) * 2f;
 	/*	turnVelPercent = Mathf.SmoothDamp(turnVelPercent, targetTurnVelPercent, ref _currentTurnVelVel, 0.2f);
 		print (targetTurnVelPercent); */
 
-		float speedLeanPercent = Mathf.Lerp (0, forwardLeanMinAngle, speed/7);
+		float speedLeanPercent = Mathf.Lerp (0, forwardLeanMinAngle, speed/7.1f);
 
 		_oldSpeed = speed;
 		_oldTurnAngle = turnAngle;
