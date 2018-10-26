@@ -43,10 +43,12 @@ public class PlayerController : MonoBehaviour {
 	//ref
 	Vector3 currentInputVelocity;
 	Vector3 rotatedVector;
-	float facingAngle;
+	float inputAngle;
 	float currentGravAccel;
-	float oldFacingAngle;
+	float oldInputAngle;
 	bool canJump;
+
+	float facingAngle;
 
 	void Start()
 	{
@@ -62,9 +64,6 @@ public class PlayerController : MonoBehaviour {
 
 		//raw input vector from input axes
 		Vector3 inputMove = new Vector3 (Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));
-
-		//GROUND CHECK HERE TEMPORARILY
-//		isGrounded = GroundCheck();
 
 		running = Input.GetButton("Button5");
 
@@ -90,47 +89,37 @@ public class PlayerController : MonoBehaviour {
 		float cameraAngle = Mathf.Atan2 (playerCam.transform.forward.x, playerCam.transform.forward.z) * Mathf.Rad2Deg;
 		//input rotation so its relative to camera
 		inputMove = (Quaternion.Euler(0, cameraAngle, 0) * inputMove);
-
-		//smooth input (simple) -- r e p u r p o s e
-//		smoothInput = Vector3.SmoothDamp(smoothInput, inputMove, ref currentInputVelocity, inputSmoothTime);
-
-		//lerp walk speed based on input magnitude -- temporarily add runspeed in as maxwalkspeed if running is true
+		
+		//lerp walk speed based on input magnitude (clamped at 0.8) -- temporarily add runspeed in as maxwalkspeed if running is true
 		float walkSpeed = Mathf.Lerp (minWalkSpeed, running ? runSpeed : maxWalkSpeed, Mathf.Clamp(inputMove.magnitude, 0f, 0.8f) / 0.8f);
 		
 		//facing -- add angle smoothing rather than doing it based on smoothInput
-		//if input magnitude is zero, set facing angle to last recorded facing angle, else set it to the angle of SMOOTHED input (looksnicer)
-//		float facingAngle = inputMove.magnitude == 0 ? oldFacingAngle : Mathf.Atan2 (smoothInput.normalized.x, smoothInput.normalized.z) * Mathf.Rad2Deg;
-		float targetFacingAngle = Mathf.Atan2 (inputMove.normalized.x, inputMove.normalized.z) * Mathf.Rad2Deg;
-		facingAngle = inputMove.magnitude == 0 ? oldFacingAngle : Mathf.LerpAngle(facingAngle, targetFacingAngle, Time.deltaTime / turnSmoothTime);
+		//target facing angle = inputmove converted to angle
+		//if input magnitude is zero, set facing angle to last recorded facing angle, else set it to smoothed between current and target inputangle
+		float targetinputAngle = Mathf.Atan2 (inputMove.normalized.x, inputMove.normalized.z) * Mathf.Rad2Deg;
+		inputAngle = inputMove.magnitude == 0 ? oldInputAngle : Mathf.LerpAngle(inputAngle, targetinputAngle, Time.deltaTime / turnSmoothTime);
 
-		//if grounded, velocity is the inputmove*walkspeed (with small force to keep grounded) aligned with the normals of the ground
+		//if grounded, velocity is the inputmove*walkspeed aligned with the normals of the ground
 		//if not grounded, velocity is the inputmove*walkspeed + grav accel on y axis
 		if (isGrounded) {
 			canJump = true;
-//			currentGravAccel = 0;
-//			canJump = true;
-	//		velocity = PeepGround (inputMove.normalized) * walkSpeed;
-	//		velocity.y = velocity.y > -.1f ? velocity.y = -.1f : velocity.y -= .1f;
 
-			//if grounded, give velocity ground movement
-			//y velocity handled by apply gravity --//NAH gotta get that smooth slope movement --////BUT WTF THOEEE IT HAS IT IN THERE
-			Vector3 targetVel = PeepGround (inputMove.normalized) * walkSpeed;
+//			Vector3 targetVel = PeepGround (inputMove.normalized) * walkSpeed;
+			//target velocity determined by facing direction and ground angle now
+			Vector3 targetVel = PeepGround (Quaternion.AngleAxis(inputAngle, Vector3.up) * Vector3.forward) * walkSpeed * inputMove.normalized.magnitude;
+			//velocity is targetvel on x and z, on y if its grounded, else its handled by gravity calculation
 			velocity = new Vector3 (targetVel.x, jumping ? velocity.y : targetVel.y, targetVel.z);
 
-		} else {
-//			velocity = ApplyGravity(inputMove * walkSpeed);
-			//if not grounded, do arial movement calculations
-			velocity.x = inputMove.x * walkSpeed;
-			velocity.z = inputMove.z * walkSpeed;
-			//y velocity handled by ApplyGravity -- but now its in here from there :O
-//			velocity.y = currentGravAccel;
-		//	velocity.y += gravity * Time.deltaTime;
-		}
-//		print ("Grounded = " + isGrounded);
-	//	velocity = PeepGround (inputMove.normalized) * walkSpeed;
+			facingAngle = inputAngle;
 
+		} else {
+			//if not grounded, do arial movement calculations
+//			velocity.x = inputMove.x * walkSpeed;
+//			velocity.z = inputMove.z * walkSpeed;
+		}
+		
 		//old var
-		oldFacingAngle = facingAngle;
+		oldInputAngle = inputAngle;
 
 		//MOVEMENT + ROTATION output
 		controller.Move(velocity * Time.deltaTime);
@@ -158,28 +147,9 @@ public class PlayerController : MonoBehaviour {
 		return dir;
 	}
 
-/*	Vector3 ApplyGravity (Vector3 dir) {
-
-		currentGravAccel += gravity * Time.deltaTime;
-//		return dir * maxWalkSpeed + Vector3.up * currentGravAccel;
-//		dir.y = currentGravAccel;
-		return dir + Vector3.up * currentGravAccel;
-
-	}
-	*/
 	void ApplyGravity() {
 		float downward = velocity.y > 0 ? 0 : -10;
-	/*	if (isGrounded) {
-//			velocity.y = jumping ? velocity.y : -.1f;
-		//	if (jumping) {
-		//		velocity.y = velocity.y;
-		//	} else {
-		//		velocity.y = rotatedVector.y - 0.1f;
-		//	}
-			currentGravAccel = 0;
-		} else {
-			currentGravAccel = velocity.y + (gravity + downward) * Time.deltaTime;
-		} */
+		//if grounded, grav accel = 0, if not, grav accel = y velocity + gravity value+current downward accel (*deltatime)
 		currentGravAccel = isGrounded ? 0 : velocity.y + (gravity + downward) * Time.deltaTime;
 
 		if (!isGrounded)
@@ -193,13 +163,7 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	bool GroundCheck() {
-	/*	foreach (Vector3 rayStart in groundCheckRays) {
-			Vector3 pos = new Vector3
-		}
-
-		//debugfornow
-		return false;
-		*/
+		//cast sphere down to just below feet, if true, grounded=true
 		RaycastHit hit;
 		if (Physics.SphereCast(transform.position + Vector3.up, sphereCastRadius, Vector3.down, out hit, sphereCastDistance, 1 << 9, QueryTriggerInteraction.Ignore))
 			return true;

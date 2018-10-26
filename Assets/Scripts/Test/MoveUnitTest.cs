@@ -12,13 +12,10 @@ public class MoveUnitTest : MonoBehaviour {
 
 	Animator animator;
 
-	Vector3 oldPos;
-
 	// Use this for initialization
 	void Start () {
 
 		controller = GetComponent<CharacterController>();
-		oldPos = transform.position;
 
 		animator = GetComponentInChildren<Animator>();
 
