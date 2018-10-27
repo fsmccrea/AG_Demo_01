@@ -9,6 +9,7 @@ public class BoxAnimator : MonoBehaviour {
 	public float maxTurnLeanAngle = 20;
 
 	Transform _boxTransform;
+	Animator animator;
 
 	float maxWalkSpeed;
 
@@ -32,6 +33,7 @@ public class BoxAnimator : MonoBehaviour {
 	void Start () {
 
 		_boxTransform = transform.GetChild(1);
+		animator = GetComponentInChildren<Animator>();
 
 	}
 	
@@ -64,5 +66,11 @@ public class BoxAnimator : MonoBehaviour {
 		_oldTurnAngle = turnAngle;
 
 		_boxTransform.localEulerAngles = Vector3.right * (accelPercent + speedLeanPercent) + Vector3.back * turnLeanAngle;
+	}
+
+	public void UpdateSpeed (float speedPercent) {
+
+		animator.SetFloat("speedPercent", speedPercent);
+
 	}
 }

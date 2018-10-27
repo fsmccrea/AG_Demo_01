@@ -24,6 +24,7 @@ public class PlayerController : MonoBehaviour {
 	//object reference
 	public GameObject playerCam;
 	CharacterController controller;
+	BoxAnimator charAnimator;
 
 	//temp scene reference
 	Scene scene;
@@ -54,6 +55,7 @@ public class PlayerController : MonoBehaviour {
 	{
 		controller = GetComponent<CharacterController>();
 		scene = SceneManager.GetActiveScene();
+		charAnimator = GetComponent<BoxAnimator>();
 	}
 
 	void Update()
@@ -89,19 +91,21 @@ public class PlayerController : MonoBehaviour {
 		float cameraAngle = Mathf.Atan2 (playerCam.transform.forward.x, playerCam.transform.forward.z) * Mathf.Rad2Deg;
 		//input rotation so its relative to camera
 		inputMove = (Quaternion.Euler(0, cameraAngle, 0) * inputMove);
-		
-		//lerp walk speed based on input magnitude (clamped at 0.8) -- temporarily add runspeed in as maxwalkspeed if running is true
-		float walkSpeed = Mathf.Lerp (minWalkSpeed, running ? runSpeed : maxWalkSpeed, Mathf.Clamp(inputMove.magnitude, 0f, 0.8f) / 0.8f);
-		
-		//facing -- add angle smoothing rather than doing it based on smoothInput
-		//target facing angle = inputmove converted to angle
-		//if input magnitude is zero, set facing angle to last recorded facing angle, else set it to smoothed between current and target inputangle
-		float targetinputAngle = Mathf.Atan2 (inputMove.normalized.x, inputMove.normalized.z) * Mathf.Rad2Deg;
-		inputAngle = inputMove.magnitude == 0 ? oldInputAngle : Mathf.LerpAngle(inputAngle, targetinputAngle, Time.deltaTime / turnSmoothTime);
 
-		//if grounded, velocity is the inputmove*walkspeed aligned with the normals of the ground
-		//if not grounded, velocity is the inputmove*walkspeed + grav accel on y axis
 		if (isGrounded) {
+
+			//lerp walk speed based on input magnitude (clamped at 0.8) -- temporarily add runspeed in as maxwalkspeed if running is true
+			float walkSpeed = Mathf.Lerp (minWalkSpeed, running ? runSpeed : maxWalkSpeed, Mathf.Clamp(inputMove.magnitude, 0f, 0.8f) / 0.8f);
+
+			//facing -- add angle smoothing rather than doing it based on smoothInput
+			//target facing angle = inputmove converted to angle
+			//if input magnitude is zero, set facing angle to last recorded facing angle, else set it to smoothed between current and target inputangle
+			float targetinputAngle = Mathf.Atan2 (inputMove.normalized.x, inputMove.normalized.z) * Mathf.Rad2Deg;
+			inputAngle = inputMove.magnitude == 0 ? oldInputAngle : Mathf.LerpAngle(inputAngle, targetinputAngle, Time.deltaTime / turnSmoothTime);
+
+			//if grounded, velocity is the inputmove*walkspeed aligned with the normals of the ground
+			//if not grounded, velocity is the inputmove*walkspeed + grav accel on y axis
+	//		if (isGrounded) {
 			canJump = true;
 
 //			Vector3 targetVel = PeepGround (inputMove.normalized) * walkSpeed;
@@ -111,6 +115,8 @@ public class PlayerController : MonoBehaviour {
 			velocity = new Vector3 (targetVel.x, jumping ? velocity.y : targetVel.y, targetVel.z);
 
 			facingAngle = inputAngle;
+
+			charAnimator.UpdateSpeed(walkSpeed * inputMove.normalized.magnitude);
 
 		} else {
 			//if not grounded, do arial movement calculations
@@ -126,7 +132,7 @@ public class PlayerController : MonoBehaviour {
 		transform.eulerAngles = Vector3.up * facingAngle;
 
 		//animator output
-		GetComponent<BoxAnimator>().Lean(new Vector3(velocity.x, 0, velocity.z).magnitude, facingAngle);
+		charAnimator.Lean(new Vector3(velocity.x, 0, velocity.z).magnitude, facingAngle);
 	}
 
 	void Jump() {

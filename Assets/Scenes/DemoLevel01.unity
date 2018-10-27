@@ -7389,7 +7389,6 @@ GameObject:
   - component: {fileID: 738389756}
   - component: {fileID: 738389755}
   - component: {fileID: 738389754}
-  - component: {fileID: 738389753}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -7397,17 +7396,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &738389753
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 738389752}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dc790c5cbd4f81645ac1e3e33687346f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &738389754
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7421,7 +7409,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   forwardLeanMaxAngle: 45
   forwardLeanMinAngle: 3
-  turnLeanTime: 0.05
+  maxTurnLeanAngle: 20
 --- !u!114 &738389755
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7433,7 +7421,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c4baf54e384d8244a01758427412a0d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxWalkSpeed: 3.71
+  maxWalkSpeed: 5
   minWalkSpeed: 1.34
   runSpeed: 7.1
   jumpHeight: 1.17
