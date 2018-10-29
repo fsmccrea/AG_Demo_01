@@ -14,7 +14,9 @@ public class CameraController : MonoBehaviour {
 	public float smoothing = 3;
 	public float followDist = 3;
 	public float leadDist = 2;
-	public float camMaxDistance = 7;
+	public float camDistance = 7;
+	public float maxCamDistance = 20;
+	public float minCamDistance = 1.5f;
 	[Range(0.0f, 1.0f)]
 	public float obstacleDistBuffer = 1f;
 
@@ -33,7 +35,7 @@ public class CameraController : MonoBehaviour {
 		camRayTarget = cameraFocus.transform.GetChild(0).gameObject;
 		theCamera = cameraFocus.transform.GetChild(1).GetComponent<Camera>();
 
-		_rayTargetPosition = new Vector3 (0, 0, -camMaxDistance);
+		_rayTargetPosition = new Vector3 (0, 0, -camDistance);
 		camRayTarget.transform.localPosition = _rayTargetPosition;
 
 		Cursor.lockState = CursorLockMode.Locked;
@@ -44,6 +46,13 @@ public class CameraController : MonoBehaviour {
 	void Update () {		
 		//mouse delta per frame
 		_mouseDelta = new Vector2 (Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y"));
+
+		Vector2 triggerZoom = new Vector2 (Input.GetAxisRaw("L2") / 2 - .5f, Input.GetAxisRaw("R2") / 2 + .5f);
+
+		if (triggerZoom != new Vector2 (0, 0)) {
+			camDistance -= (triggerZoom.x + triggerZoom.y) / 10;
+			camDistance = Mathf.Clamp(camDistance, minCamDistance, maxCamDistance);
+		}
 
 		CheckCursorLock();
 		MoveCamera();
@@ -84,7 +93,7 @@ public class CameraController : MonoBehaviour {
 	}
 
 	void CameraAvoidObstacles() {
-		_rayTargetPosition.z = -camMaxDistance - obstacleDistBuffer;
+		_rayTargetPosition.z = -camDistance - obstacleDistBuffer;
 		camRayTarget.transform.localPosition = _rayTargetPosition;
 
 		Vector3 dirToPoint = (camRayTarget.transform.position - player.transform.position  + Vector3.up * 1.55f).normalized;
@@ -95,7 +104,7 @@ public class CameraController : MonoBehaviour {
 			theCamera.transform.position = hit.point - dirToPoint * obstacleDistBuffer;
 		} else {
 //			Debug.DrawLine(player.transform.position  + Vector3.up * 1.55f, camRayTarget.transform.position, Color.green);
-			theCamera.transform.localPosition = new Vector3 (0, 0, -camMaxDistance);
+			theCamera.transform.localPosition = new Vector3 (0, 0, -camDistance);
 		}
 	}
 

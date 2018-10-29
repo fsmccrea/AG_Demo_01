@@ -73,4 +73,16 @@ public class BoxAnimator : MonoBehaviour {
 		animator.SetFloat("speedPercent", speedPercent);
 
 	}
+
+	public void UpdateJump (bool grounded) {
+
+		animator.SetBool("grounded", grounded);
+
+	}
+
+	public void UpdateYVel (float yVel) {
+
+		animator.SetFloat("yVel", yVel);
+
+	}
 }

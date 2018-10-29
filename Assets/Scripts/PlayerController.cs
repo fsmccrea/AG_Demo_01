@@ -70,9 +70,10 @@ public class PlayerController : MonoBehaviour {
 		running = Input.GetButton("Button5");
 
 		//jumpin
-		jumping = Input.GetButton("Button2");
-		if (Input.GetButtonDown("Button2") && canJump)
+		if (Input.GetButtonDown("Button2") && isGrounded) {
 			Jump();
+			jumping = true;
+		}
 
 		ApplyGravity();
 
@@ -83,6 +84,7 @@ public class PlayerController : MonoBehaviour {
 	void FixedUpdate()
 	{
 		isGrounded = GroundCheck();
+		charAnimator.UpdateJump(isGrounded);
 	}
 
 	void Move(Vector3 inputMove)
@@ -133,11 +135,12 @@ public class PlayerController : MonoBehaviour {
 
 		//animator output
 		charAnimator.Lean(new Vector3(velocity.x, 0, velocity.z).magnitude, facingAngle);
+		charAnimator.UpdateYVel(velocity.y);
 	}
 
 	void Jump() {
 
-		canJump = controller.isGrounded;
+//		canJump = controller.isGrounded;
 		velocity.y = Mathf.Sqrt(-2 * jumpHeight * gravity);
 
 	}
@@ -155,6 +158,8 @@ public class PlayerController : MonoBehaviour {
 
 	void ApplyGravity() {
 		float downward = velocity.y > 0 ? 0 : -10;
+		jumping = velocity.y < 0 ? false : jumping;
+
 		//if grounded, grav accel = 0, if not, grav accel = y velocity + gravity value+current downward accel (*deltatime)
 		currentGravAccel = isGrounded ? 0 : velocity.y + (gravity + downward) * Time.deltaTime;
 
